@@ -6,7 +6,7 @@ export default ({ env }: { env: Env }) => ({
       jwt: {
         expiresIn: "7d",
       },
-      jwtSecret: env("JWT_SECRET"),
+      jwtSecret: env("JWT_SECRET", "dev-jwt-secret"),
     },
   },
 });

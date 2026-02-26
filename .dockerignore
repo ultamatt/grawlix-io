@@ -1,0 +1,12 @@
+.git
+.github
+.devcontainer
+.turbo
+node_modules
+**/node_modules
+apps/cms/.cache
+apps/cms/.tmp
+apps/cms/.strapi
+apps/cms/types/generated
+apps/web/.astro
+*.log

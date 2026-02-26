@@ -17,6 +17,8 @@ grawlix-io/
 ├── apps/
 │   ├── web/        # Astro + React frontend (port 3000)
 │   └── cms/        # Strapi CMS backend (port 1337)
+├── Dockerfile      # Production image for web + cms
+├── docker-compose.yml
 ├── .devcontainer/  # VS Code Dev Container config
 ├── .github/        # GitHub Actions CI workflows
 ├── biome.json      # Biome linting/formatting config
@@ -44,20 +46,31 @@ pnpm install
 ### Development
 
 ```bash
-# Run all apps in development mode
+# Run frontend + Strapi in development mode
 pnpm dev
 
 # Run frontend only
 pnpm --filter @grawlix/web dev
 
 # Run CMS only
-pnpm --filter @grawlix/cms develop
+pnpm --filter @grawlix/cms dev
 ```
+
+- Frontend: http://localhost:3000
+- Strapi API: http://localhost:1337
+- Strapi Admin: http://localhost:1337/admin
 
 ### Building
 
 ```bash
 pnpm build
+```
+
+### Production (Local)
+
+```bash
+pnpm build
+pnpm start
 ```
 
 ### Linting & Formatting
@@ -70,13 +83,35 @@ pnpm exec biome check .
 pnpm exec biome check --write .
 ```
 
-## Environment Variables
+## Environment Variables (CMS)
 
-Copy `.env.example` to `.env` in each app directory:
+Copy the CMS example file and set strong secrets before production use:
 
 ```bash
 cp apps/cms/.env.example apps/cms/.env
 ```
+
+Required variables are in `apps/cms/.env.example`:
+- `APP_KEYS`
+- `API_TOKEN_SALT`
+- `ADMIN_JWT_SECRET`
+- `TRANSFER_TOKEN_SALT`
+- `JWT_SECRET`
+- `DATABASE_FILENAME`
+
+`pnpm dev` works without a `.env` file by using development fallback values, but production should always set explicit secure values.
+
+## Docker
+
+Build and run both frontend and Strapi in one container:
+
+```bash
+docker compose up --build
+```
+
+Exposed ports:
+- `3000` frontend
+- `1337` Strapi API/Admin
 
 ## DevContainer
 

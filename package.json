@@ -5,6 +5,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "start": "turbo run start --parallel --filter=@grawlix/web --filter=@grawlix/cms",
     "lint": "turbo run lint",
     "format": "biome format --write .",
     "check": "biome check --write .",

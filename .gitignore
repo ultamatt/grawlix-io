@@ -42,7 +42,11 @@ Thumbs.db
 # Strapi
 apps/cms/.cache
 apps/cms/.tmp
-apps/cms/public/uploads
+apps/cms/.strapi
+apps/cms/.strapi-updater.json
+apps/cms/public/uploads/*
+!apps/cms/public/uploads/.gitkeep
+apps/cms/types/generated
 
 # Astro
 apps/web/.astro

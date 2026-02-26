@@ -3,22 +3,25 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "strapi develop",
     "develop": "strapi develop",
-    "start": "strapi start",
+    "start": "NODE_ENV=production strapi start",
     "build": "strapi build",
     "typecheck": "tsc --noEmit",
     "strapi": "strapi"
   },
   "dependencies": {
-    "@strapi/strapi": "4.25.9",
-    "@strapi/plugin-users-permissions": "4.25.9",
     "@strapi/plugin-i18n": "4.25.9",
-    "better-sqlite3": "9.4.3",
+    "@strapi/plugin-users-permissions": "4.25.9",
+    "@strapi/strapi": "4.25.9",
+    "better-sqlite3": "11.10.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-router-dom": "5.3.4"
+    "react-router-dom": "5.3.4",
+    "styled-components": "^5.2.1"
   },
   "devDependencies": {
+    "@types/node": "^22.13.1",
     "@strapi/typescript-utils": "4.25.9",
     "typescript": "5.7.3"
   },
