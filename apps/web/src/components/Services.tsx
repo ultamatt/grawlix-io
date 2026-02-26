@@ -34,9 +34,7 @@ export function Services() {
     <section id="services" className="services">
       <div className="container">
         <h2>What We Do</h2>
-        <p className="section-subtitle">
-          We offer end-to-end digital product development services
-        </p>
+        <p className="section-subtitle">We offer end-to-end digital product development services</p>
         <div className="services-grid">
           {services.map((service) => (
             <div key={service.id} className="service-card">
