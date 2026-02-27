@@ -7,7 +7,7 @@
       "nvmVersion": "latest"
     }
   },
-  "postCreateCommand": "npm install -g pnpm@9 turbo && pnpm install",
+  "postCreateCommand": "corepack enable && pnpm install",
   "customizations": {
     "vscode": {
       "extensions": [

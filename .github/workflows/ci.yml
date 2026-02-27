@@ -32,7 +32,7 @@ jobs:
         run: pnpm exec biome lint .
 
       - name: Run Biome format check
-        run: pnpm exec biome format .
+        run: pnpm exec biome format --check .
 
   typecheck:
     name: Type Check
