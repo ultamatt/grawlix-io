@@ -5,7 +5,7 @@ const FORBIDDEN_PREFIXES = ["replace-me", "change-me", "your-"];
 const validateValue = (key: string, value: string | undefined) => {
   if (typeof value !== "string") {
     throw new Error(
-      `Missing environment variable "${key}". Set it in apps/cms/.env before starting Strapi.`
+      `Missing environment variable "${key}". Set it in the repository root .env before starting Strapi.`
     );
   }
 
@@ -16,7 +16,7 @@ const validateValue = (key: string, value: string | undefined) => {
 
   if (value.trim().length === 0 || isPlaceholder) {
     throw new Error(
-      `Invalid environment variable "${key}". Set a real value in apps/cms/.env before starting Strapi.`
+      `Invalid environment variable "${key}". Set a real value in the repository root .env before starting Strapi.`
     );
   }
 };
@@ -33,7 +33,7 @@ export const requireEnvArray = (env: Env, key: string): string[] => {
 
   if (values.length === 0) {
     throw new Error(
-      `Invalid environment variable "${key}". Set a comma-separated value in apps/cms/.env before starting Strapi.`
+      `Invalid environment variable "${key}". Set a comma-separated value in the repository root .env before starting Strapi.`
     );
   }
 

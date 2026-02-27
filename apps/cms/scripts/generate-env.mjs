@@ -1,10 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const appDir = process.cwd();
-const examplePath = path.join(appDir, ".env.example");
-const envPath = path.join(appDir, ".env");
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptDir, "../../..");
+const examplePath = path.join(repoRoot, ".env.example");
+const envPath = path.join(repoRoot, ".env");
 
 const randomSecret = (size = 32) => randomBytes(size).toString("hex");
 

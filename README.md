@@ -46,7 +46,11 @@ pnpm install
 ### Development
 
 ```bash
+# Generate root .env from .env.example (one-time setup)
+pnpm env:generate
+
 # Run frontend + Strapi in development mode
+# (automatically symlinks root .env into each app before starting)
 pnpm dev
 
 # Run frontend only
@@ -59,6 +63,16 @@ pnpm --filter @grawlix/cms dev
 - Frontend: http://localhost:3000
 - Strapi API: http://localhost:1337
 - Strapi Admin: http://localhost:1337/admin
+
+> **Note:** `pnpm dev` (and `pnpm build`) automatically run the env link step
+> via a `predev`/`prebuild` hook. You can also run it manually at any time:
+>
+> ```bash
+> pnpm env:link
+> ```
+>
+> This creates `apps/cms/.env → ../../.env` and `apps/web/.env → ../../.env`
+> so each app picks up the shared root `.env` through its native env loading.
 
 ### Building
 
@@ -83,15 +97,30 @@ pnpm exec biome check .
 pnpm exec biome check --write .
 ```
 
-## Environment Variables (CMS)
+## Environment Variables
 
-Copy the CMS example file and set strong secrets before production use:
+Both apps share a single root `.env` file. The `env:link` step (run automatically
+before `dev` and `build`) creates symlinks so Astro and Strapi each load it natively.
+
+### Quick start
 
 ```bash
-cp apps/cms/.env.example apps/cms/.env
+# Option A — generate fresh secrets automatically
+pnpm env:generate
+
+# Option B — fill in your own values
+cp .env.example .env
 ```
 
-Required variables are in `apps/cms/.env.example`:
+Then optionally verify the symlinks are in place:
+
+```bash
+pnpm env:link
+```
+
+Common variables (see `.env.example` for the full list):
+- `PUBLIC_CMS_URL`: Strapi base URL used by the frontend contact form  
+  (embedded in the Astro static build at compile time)
 - `APP_KEYS`
 - `API_TOKEN_SALT`
 - `ADMIN_JWT_SECRET`
@@ -99,36 +128,37 @@ Required variables are in `apps/cms/.env.example`:
 - `JWT_SECRET`
 - `DATABASE_FILENAME`
 
-Strapi startup now fails fast if required variables are missing or left with placeholder values.
+Strapi startup fails fast if required variables are missing or left with placeholder values.
 This applies to `dev`, `build`, and `start` commands for the CMS package.
-
-## Environment Variables (Web)
-
-Copy the web example file if you need to override where the frontend sends contact form submissions:
-
-```bash
-cp apps/web/.env.example apps/web/.env
-```
-
-- `PUBLIC_CMS_URL`: Base URL for the Strapi API (defaults to `http://localhost:1337` on localhost)
 
 ## Docker
 
 Build and run both frontend and Strapi in one container:
 
 ```bash
+# Set env values first
+cp .env.example .env
+
 docker compose up --build
 ```
 
-`docker-compose.yml` loads secrets from `apps/cms/.env`, so set that file first:
+`docker-compose.yml` loads values from root `.env` at runtime via `env_file`.
+The link step is skipped automatically in Docker builds (no `.env` is present in
+the image — env vars are injected directly by Docker/the platform).
+
+For the Astro static build, `PUBLIC_CMS_URL` is embedded at compile time.
+Pass it as a Docker build argument when the Strapi URL is known at image build time:
 
 ```bash
-cp apps/cms/.env.example apps/cms/.env
+docker build --build-arg PUBLIC_CMS_URL=https://api.example.com:1337 .
 ```
 
+On DigitalOcean App Platform, set it as a build-time environment variable in the
+app spec or dashboard.
+
 Exposed ports:
-- `3000` frontend
-- `1337` Strapi API/Admin
+- `80` → frontend (Astro, internal port 3000)
+- `1337` → Strapi API / Admin
 
 ## DevContainer
 
