@@ -26,10 +26,10 @@ setInterval(() => {
 
 export default (_config: unknown, _: unknown) => {
   return async (
-    ctx: { request: { ip?: string }; throw: (status: number, message: string) => never },
+    ctx: { ip?: string; request: { ip?: string }; throw: (status: number, message: string) => never },
     next: () => Promise<void>
   ) => {
-    const ip = ctx.request.ip;
+    const ip = ctx.ip ?? ctx.request.ip;
     if (!ip) {
       ctx.throw(400, "Unable to determine request origin.");
     }

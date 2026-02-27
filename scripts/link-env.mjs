@@ -13,7 +13,7 @@
  * Runs automatically via the `predev` and `prebuild` hooks in package.json.
  */
 
-import { lstatSync, readlinkSync, symlinkSync, unlinkSync } from "node:fs";
+import { lstatSync, readlinkSync, statSync, symlinkSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,7 +23,9 @@ const rootEnvPath = path.join(repoRoot, ".env");
 
 let rootEnvExists = false;
 try {
-  lstatSync(rootEnvPath);
+  // statSync follows symlinks — ensures the root .env is actually readable,
+  // not just a broken symlink that lstatSync would accept.
+  statSync(rootEnvPath);
   rootEnvExists = true;
 } catch {
   rootEnvExists = false;
