@@ -112,6 +112,8 @@ pnpm env:generate
 cp .env.example .env
 ```
 
+`pnpm env:generate` will refuse to overwrite an existing `.env` — delete it first if you need to regenerate secrets.
+
 Then optionally verify the symlinks are in place:
 
 ```bash

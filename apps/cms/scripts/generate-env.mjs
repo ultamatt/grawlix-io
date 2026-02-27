@@ -31,11 +31,19 @@ const output = source
     const key = rawKey.trim();
     const replacement = replacements[key];
 
-    return replacement ? `${key}=${replacement}` : line;
+    return replacement !== undefined ? `${key}=${replacement}` : line;
   })
   .join("\n")
   .replace(/\n?$/, "\n");
 
-await writeFile(envPath, output, "utf8");
-
-console.log(`Generated ${envPath} from ${examplePath}`);
+try {
+  await writeFile(envPath, output, { encoding: "utf8", mode: 0o600, flag: "wx" });
+  console.log(`Generated ${envPath} from ${examplePath}`);
+} catch (error) {
+  if (error.code === "EEXIST") {
+    console.error(`Refusing to overwrite existing ${envPath}. Delete it first or adjust the script if you really want to regenerate it.`);
+    process.exitCode = 1;
+  } else {
+    throw error;
+  }
+}
