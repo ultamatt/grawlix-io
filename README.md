@@ -102,6 +102,16 @@ Required variables are in `apps/cms/.env.example`:
 Strapi startup now fails fast if required variables are missing or left with placeholder values.
 This applies to `dev`, `build`, and `start` commands for the CMS package.
 
+## Environment Variables (Web)
+
+Copy the web example file if you need to override where the frontend sends contact form submissions:
+
+```bash
+cp apps/web/.env.example apps/web/.env
+```
+
+- `PUBLIC_CMS_URL`: Base URL for the Strapi API (defaults to `http://localhost:1337` on localhost)
+
 ## Docker
 
 Build and run both frontend and Strapi in one container:
