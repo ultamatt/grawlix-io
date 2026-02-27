@@ -9,4 +9,9 @@ apps/cms/.tmp
 apps/cms/.strapi
 apps/cms/types/generated
 apps/web/.astro
+.env
+.env.local
+.env.*.local
+# Prevent broken symlinks created by scripts/link-env.mjs from leaking into the image
+apps/**/.env
 *.log

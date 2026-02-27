@@ -6,18 +6,78 @@ export function Contact() {
     email: "",
     message: "",
   });
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const getCmsBaseUrl = () => {
+    const configured = import.meta.env.PUBLIC_CMS_URL?.trim();
+    if (configured) {
+      return configured.replace(/\/$/, "");
+    }
+
+    if (
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ) {
+      return "http://localhost:1337";
+    }
+
+    return "";
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+
+    if (status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setErrorMessage("");
+
+    const baseUrl = getCmsBaseUrl();
+    if (!baseUrl) {
+      setStatus("error");
+      setErrorMessage("The contact form is not correctly configured. Please try again later.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${baseUrl}/api/contact-submissions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data: {
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            message: formData.message.trim(),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Request failed");
+      }
+
+      setStatus("success");
+    } catch {
+      setStatus("error");
+      setErrorMessage("We could not submit your message. Please try again in a moment.");
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (status === "error") {
+      setStatus("idle");
+      setErrorMessage("");
+    }
+
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  if (submitted) {
+  if (status === "success") {
     return (
       <section id="contact" className="contact">
         <div className="container">
@@ -46,6 +106,7 @@ export function Contact() {
               onChange={handleChange}
               required
               placeholder="Your name"
+              disabled={status === "submitting"}
             />
           </div>
           <div className="form-group">
@@ -58,6 +119,7 @@ export function Contact() {
               onChange={handleChange}
               required
               placeholder="your@email.com"
+              disabled={status === "submitting"}
             />
           </div>
           <div className="form-group">
@@ -70,10 +132,17 @@ export function Contact() {
               required
               placeholder="Tell us about your project..."
               rows={5}
+              disabled={status === "submitting"}
             />
           </div>
-          <button type="submit" className="btn btn-primary">
-            Send Message
+          {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={status === "submitting"}
+            aria-busy={status === "submitting"}
+          >
+            {status === "submitting" ? "Sending..." : "Send Message"}
           </button>
         </form>
       </div>

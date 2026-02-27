@@ -8,6 +8,7 @@
     "start": "NODE_ENV=production strapi start",
     "build": "strapi build",
     "typecheck": "tsc --noEmit",
+    "env:generate": "node ./scripts/generate-env.mjs",
     "strapi": "strapi"
   },
   "dependencies": {
