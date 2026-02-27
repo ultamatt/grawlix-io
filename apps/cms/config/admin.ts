@@ -1,17 +1,19 @@
+import { requireEnv } from "./env";
+
 type Env = ((key: string, defaultValue?: string) => string) & {
   bool: (key: string, defaultValue?: boolean) => boolean;
 };
 
 export default ({ env }: { env: Env }) => ({
   auth: {
-    secret: env("ADMIN_JWT_SECRET", "dev-admin-jwt-secret"),
+    secret: requireEnv(env, "ADMIN_JWT_SECRET"),
   },
   apiToken: {
-    salt: env("API_TOKEN_SALT", "dev-api-token-salt"),
+    salt: requireEnv(env, "API_TOKEN_SALT"),
   },
   transfer: {
     token: {
-      salt: env("TRANSFER_TOKEN_SALT", "dev-transfer-token-salt"),
+      salt: requireEnv(env, "TRANSFER_TOKEN_SALT"),
     },
   },
   flags: {

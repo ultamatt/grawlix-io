@@ -99,7 +99,8 @@ Required variables are in `apps/cms/.env.example`:
 - `JWT_SECRET`
 - `DATABASE_FILENAME`
 
-`pnpm dev` works without a `.env` file by using development fallback values, but production should always set explicit secure values.
+Strapi startup now fails fast if required variables are missing or left with placeholder values.
+This applies to `dev`, `build`, and `start` commands for the CMS package.
 
 ## Docker
 
@@ -107,6 +108,12 @@ Build and run both frontend and Strapi in one container:
 
 ```bash
 docker compose up --build
+```
+
+`docker-compose.yml` loads secrets from `apps/cms/.env`, so set that file first:
+
+```bash
+cp apps/cms/.env.example apps/cms/.env
 ```
 
 Exposed ports:

@@ -1,3 +1,5 @@
+import { requireEnv } from "./env";
+
 type Env = (key: string, defaultValue?: string) => string;
 
 export default ({ env }: { env: Env }) => ({
@@ -6,7 +8,7 @@ export default ({ env }: { env: Env }) => ({
       jwt: {
         expiresIn: "7d",
       },
-      jwtSecret: env("JWT_SECRET", "dev-jwt-secret"),
+      jwtSecret: requireEnv(env, "JWT_SECRET"),
     },
   },
 });

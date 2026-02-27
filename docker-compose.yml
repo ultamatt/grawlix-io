@@ -3,20 +3,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - apps/cms/.env
     ports:
       - "3000:3000"
       - "1337:1337"
     environment:
-      HOST: 0.0.0.0
-      PORT: 1337
-      APP_KEYS: ${APP_KEYS:-change-me-1,change-me-2,change-me-3,change-me-4}
-      API_TOKEN_SALT: ${API_TOKEN_SALT:-change-me}
-      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-change-me}
-      TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT:-change-me}
-      JWT_SECRET: ${JWT_SECRET:-change-me}
-      DATABASE_FILENAME: .tmp/data.db
-      WEBHOOKS_POPULATE_RELATIONS: "false"
-      STRAPI_TELEMETRY_DISABLED: "true"
+      NODE_ENV: production
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-1337}
+      WEBHOOKS_POPULATE_RELATIONS: ${WEBHOOKS_POPULATE_RELATIONS:-false}
+      STRAPI_TELEMETRY_DISABLED: ${STRAPI_TELEMETRY_DISABLED:-true}
     volumes:
       - cms_data:/app/apps/cms/.tmp
       - cms_uploads:/app/apps/cms/public/uploads
