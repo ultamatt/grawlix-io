@@ -85,11 +85,13 @@ pnpm exec biome check --write .
 
 ## Environment Variables (CMS)
 
-Copy the CMS example file and set strong secrets before production use:
+Generate the CMS `.env` file with random secrets automatically:
 
 ```bash
-cp apps/cms/.env.example apps/cms/.env
+pnpm cms:env
 ```
+
+This creates `apps/cms/.env` from `apps/cms/.env.example`, filling all required Strapi secret keys with randomly generated values. It will refuse to overwrite an existing `.env` — delete it first if you need to regenerate secrets.
 
 Required variables are in `apps/cms/.env.example`:
 - `APP_KEYS`
@@ -120,10 +122,10 @@ Build and run both frontend and Strapi in one container:
 docker compose up --build
 ```
 
-`docker-compose.yml` loads secrets from `apps/cms/.env`, so set that file first:
+`docker-compose.yml` loads secrets from `apps/cms/.env`, so generate that file first:
 
 ```bash
-cp apps/cms/.env.example apps/cms/.env
+pnpm cms:env
 ```
 
 Exposed ports:
