@@ -35,8 +35,15 @@ export function Contact() {
     setStatus("submitting");
     setErrorMessage("");
 
+    const baseUrl = getCmsBaseUrl();
+    if (!baseUrl) {
+      setStatus("error");
+      setErrorMessage("The contact form is not correctly configured. Please try again later.");
+      return;
+    }
+
     try {
-      const response = await fetch(`${getCmsBaseUrl()}/api/contact-submissions`, {
+      const response = await fetch(`${baseUrl}/api/contact-submissions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,6 +106,7 @@ export function Contact() {
               onChange={handleChange}
               required
               placeholder="Your name"
+              disabled={status === "submitting"}
             />
           </div>
           <div className="form-group">
@@ -111,6 +119,7 @@ export function Contact() {
               onChange={handleChange}
               required
               placeholder="your@email.com"
+              disabled={status === "submitting"}
             />
           </div>
           <div className="form-group">
@@ -123,10 +132,16 @@ export function Contact() {
               required
               placeholder="Tell us about your project..."
               rows={5}
+              disabled={status === "submitting"}
             />
           </div>
           {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
-          <button type="submit" className="btn btn-primary">
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={status === "submitting"}
+            aria-busy={status === "submitting"}
+          >
             {status === "submitting" ? "Sending..." : "Send Message"}
           </button>
         </form>
