@@ -1,5 +1,12 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
 const asRecord = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== "object") {
     return {};
@@ -14,15 +21,15 @@ const parseString = (
   { min = 1, max = 500 }: { min?: number; max?: number } = {}
 ): string => {
   if (typeof input !== "string") {
-    throw new Error(`"${field}" must be a string`);
+    throw new ValidationError(`"${field}" must be a string`);
   }
 
   const value = input.trim();
   if (value.length < min) {
-    throw new Error(`"${field}" must be at least ${min} characters`);
+    throw new ValidationError(`"${field}" must be at least ${min} characters`);
   }
   if (value.length > max) {
-    throw new Error(`"${field}" must be at most ${max} characters`);
+    throw new ValidationError(`"${field}" must be at most ${max} characters`);
   }
 
   return value;
@@ -39,7 +46,7 @@ export default {
       const message = parseString(payload.message, "message", { min: 10, max: 4000 });
 
       if (!EMAIL_REGEX.test(email)) {
-        throw new Error("\"email\" must be a valid email address");
+        throw new ValidationError("\"email\" must be a valid email address");
       }
 
       const entry = await strapi.entityService.create("api::contact-submission.contact-submission", {
@@ -59,9 +66,11 @@ export default {
         },
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to process the contact submission";
-      ctx.throw(400, message);
+      if (error instanceof ValidationError) {
+        ctx.throw(400, error.message);
+      } else {
+        throw error;
+      }
     }
   },
 };

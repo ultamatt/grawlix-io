@@ -33,8 +33,8 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=1337
 
-# 80  → Astro static preview (web frontend)
+# 3000 → Astro static preview (web frontend)
 # 1337 → Strapi API / Admin
-EXPOSE 80 1337
+EXPOSE 3000 1337
 
 CMD ["pnpm", "start"]

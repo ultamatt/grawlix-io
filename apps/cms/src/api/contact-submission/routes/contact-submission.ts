@@ -6,6 +6,7 @@ export default {
       handler: "contact-submission.create",
       config: {
         auth: false,
+        middlewares: ["global::rate-limit-contact-submission"],
       },
     },
   ],
