@@ -20,18 +20,14 @@ APP_PID=$!
 nginx -g 'daemon off;' &
 NGINX_PID=$!
 
-# If nginx exits for any reason, kill the app so the container stops and can restart.
-{
-    wait $NGINX_PID 2>/dev/null || true
-    echo "[start] nginx exited — stopping app"
-    kill $APP_PID 2>/dev/null || true
-} &
-
 # Forward SIGTERM/SIGINT to both children for clean shutdown.
 trap 'kill $APP_PID $NGINX_PID 2>/dev/null; exit 0' TERM INT
 
-# Block until the app process exits, then stop nginx.
-wait $APP_PID
-echo "[start] App process exited — stopping nginx"
-kill $NGINX_PID 2>/dev/null || true
+# Poll until either process exits (POSIX sh compatible — no wait -n).
+while kill -0 $APP_PID 2>/dev/null && kill -0 $NGINX_PID 2>/dev/null; do
+    sleep 1
+done
+
+echo "[start] A process exited — shutting down"
+kill $APP_PID $NGINX_PID 2>/dev/null || true
 wait
