@@ -25,7 +25,8 @@
         "STRAPI_TELEMETRY_DISABLED",
         "HOST",
         "WEB_PORT",
-        "STRAPI_PORT"
+        "STRAPI_PORT",
+        "ALLOWED_HOSTS"
       ]
     },
     "lint": {
