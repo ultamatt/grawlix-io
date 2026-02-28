@@ -10,4 +10,10 @@ export default defineConfig({
   integrations: [react()],
   output: "static",
   server: { port: 3000 },
+  vite: {
+    preview: {
+      // Allow all hosts — nginx is the public-facing server, so this is safe.
+      allowedHosts: "all",
+    },
+  },
 });
