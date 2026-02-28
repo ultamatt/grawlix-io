@@ -13,7 +13,17 @@
     },
     "start": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "APP_KEYS",
+        "API_TOKEN_SALT",
+        "ADMIN_JWT_SECRET",
+        "TRANSFER_TOKEN_SALT",
+        "JWT_SECRET",
+        "DATABASE_FILENAME",
+        "WEBHOOKS_POPULATE_RELATIONS",
+        "STRAPI_TELEMETRY_DISABLED"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
