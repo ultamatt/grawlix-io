@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 # WEB_PORT is the public nginx port. DO App Platform injects it as PORT;
@@ -20,14 +20,27 @@ APP_PID=$!
 nginx -g 'daemon off;' &
 NGINX_PID=$!
 
-# Forward SIGTERM/SIGINT to both children for clean shutdown.
-trap 'kill $APP_PID $NGINX_PID 2>/dev/null; exit 0' TERM INT
+# Forward SIGTERM/SIGINT: kill children, wait for them to finish, then exit.
+trap 'kill $APP_PID $NGINX_PID 2>/dev/null; wait $APP_PID $NGINX_PID 2>/dev/null; exit 0' TERM INT
 
-# Poll until either process exits (POSIX sh compatible — no wait -n).
-while kill -0 $APP_PID 2>/dev/null && kill -0 $NGINX_PID 2>/dev/null; do
-    sleep 1
-done
+# wait -n: returns when the FIRST background job exits (bash 4.3+).
+# wait -p: captures which PID exited (bash 5.1+; bookworm ships 5.2).
+EXITED_PID=""
+wait -n -p EXITED_PID "$APP_PID" "$NGINX_PID" 2>/dev/null
+EXIT_CODE=$?
 
-echo "[start] A process exited — shutting down"
-kill $APP_PID $NGINX_PID 2>/dev/null || true
-wait
+if [ "$EXITED_PID" = "$APP_PID" ]; then
+    echo "[start] App exited (code ${EXIT_CODE}) — stopping nginx"
+    kill "$NGINX_PID" 2>/dev/null || true
+    wait "$NGINX_PID" 2>/dev/null || true
+elif [ "$EXITED_PID" = "$NGINX_PID" ]; then
+    echo "[start] nginx exited (code ${EXIT_CODE}) — stopping app"
+    kill "$APP_PID" 2>/dev/null || true
+    wait "$APP_PID" 2>/dev/null || true
+else
+    echo "[start] Unknown process exited (code ${EXIT_CODE}) — shutting down"
+    kill "$APP_PID" "$NGINX_PID" 2>/dev/null || true
+    wait 2>/dev/null || true
+fi
+
+exit "$EXIT_CODE"
