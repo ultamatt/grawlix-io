@@ -1,5 +1,7 @@
 FROM node:22-bookworm-slim
 
+RUN apt-get update && apt-get install -y --no-install-recommends nginx gettext-base && rm -rf /var/lib/apt/lists/*
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
@@ -14,6 +16,15 @@ COPY apps/cms/package.json apps/cms/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY . .
+
+# nginx reverse-proxy config (envsubst is applied at container start).
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+# Remove the default nginx site so only our template is active.
+RUN rm -f /etc/nginx/sites-enabled/default
+
+# Startup script: substitutes env vars into nginx config, then launches everything.
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # PUBLIC_CMS_URL is embedded in the Astro static build at compile time.
 # Pass it as a build arg: docker build --build-arg PUBLIC_CMS_URL=https://example.com:1337
@@ -31,10 +42,14 @@ RUN PUBLIC_CMS_URL=$PUBLIC_CMS_URL pnpm --filter @grawlix/web build && \
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV PORT=1337
+ENV STRAPI_PORT=1337
 
-# 3000 → Astro static preview (web frontend)
-# 1337 → Strapi API / Admin
-EXPOSE 3000 1337
+# WEB_PORT is intentionally not set here — DO App Platform injects it as PORT
+# at runtime and start.sh maps PORT→WEB_PORT. Default in start.sh is 8080.
 
-CMD ["pnpm", "start"]
+# 3000 → Astro (internal)
+# STRAPI_PORT → Strapi (internal)
+# PORT → nginx (public, set by DO)
+EXPOSE 3000 1337 8080
+
+CMD ["/start.sh"]

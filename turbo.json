@@ -22,7 +22,10 @@
         "JWT_SECRET",
         "DATABASE_FILENAME",
         "WEBHOOKS_POPULATE_RELATIONS",
-        "STRAPI_TELEMETRY_DISABLED"
+        "STRAPI_TELEMETRY_DISABLED",
+        "HOST",
+        "WEB_PORT",
+        "STRAPI_PORT"
       ]
     },
     "lint": {
