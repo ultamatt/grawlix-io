@@ -22,7 +22,8 @@ export function Contact() {
       return "http://localhost:1337";
     }
 
-    return "";
+    // In production, nginx proxies /api/* so we can use the current origin.
+    return typeof window !== "undefined" ? window.location.origin : "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

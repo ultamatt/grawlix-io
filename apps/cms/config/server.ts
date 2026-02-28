@@ -7,7 +7,7 @@ type Env = ((key: string, defaultValue?: string) => string) & {
 
 export default ({ env }: { env: Env }) => ({
   host: env("HOST", "0.0.0.0"),
-  port: env.int("PORT", 1337),
+  port: env.int("STRAPI_PORT", 1337),
   app: {
     keys: requireEnvArray(env, "APP_KEYS"),
   },
