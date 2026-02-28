@@ -4,7 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PUBLIC_CMS_URL: "${PUBLIC_CMS_URL:-http://localhost}"
+        # Hardcoded to the nginx origin so the Astro build always routes through
+        # the reverse proxy, regardless of what PUBLIC_CMS_URL is set to in .env.
+        PUBLIC_CMS_URL: "http://localhost"
     restart: unless-stopped
     env_file:
       - .env

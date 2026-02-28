@@ -47,9 +47,8 @@ ENV STRAPI_PORT=1337
 # WEB_PORT is intentionally not set here — DO App Platform injects it as PORT
 # at runtime and start.sh maps PORT→WEB_PORT. Default in start.sh is 8080.
 
-# 3000 → Astro (internal)
-# STRAPI_PORT → Strapi (internal)
-# PORT → nginx (public, set by DO)
-EXPOSE 3000 1337 8080
+# Only the public nginx port is exposed — internal Astro (3000) and Strapi (STRAPI_PORT)
+# ports are not published. Expose both canonical values so either WEB_PORT works.
+EXPOSE 8080 80
 
 CMD ["/start.sh"]

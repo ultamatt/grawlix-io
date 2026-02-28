@@ -13,8 +13,25 @@ envsubst '${WEB_PORT} ${STRAPI_PORT}' \
   < /etc/nginx/templates/default.conf.template \
   > /etc/nginx/conf.d/default.conf
 
-# Start Strapi + Astro in the background via turbo.
+# Start both services in the background.
 pnpm start &
+APP_PID=$!
 
-# Run nginx in the foreground so the container stays alive.
-exec nginx -g 'daemon off;'
+nginx -g 'daemon off;' &
+NGINX_PID=$!
+
+# If nginx exits for any reason, kill the app so the container stops and can restart.
+{
+    wait $NGINX_PID 2>/dev/null || true
+    echo "[start] nginx exited — stopping app"
+    kill $APP_PID 2>/dev/null || true
+} &
+
+# Forward SIGTERM/SIGINT to both children for clean shutdown.
+trap 'kill $APP_PID $NGINX_PID 2>/dev/null; exit 0' TERM INT
+
+# Block until the app process exits, then stop nginx.
+wait $APP_PID
+echo "[start] App process exited — stopping nginx"
+kill $NGINX_PID 2>/dev/null || true
+wait
