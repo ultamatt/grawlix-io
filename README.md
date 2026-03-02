@@ -134,6 +134,7 @@ Common variables (see `.env.example` for the full list):
 - `AWS_S3_ENDPOINT`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
+- `STRAPI_VERBOSE_ERRORS` (set `true` temporarily to print full API error stack traces)
 
 Strapi startup fails fast if required variables are missing or left with placeholder values.
 This applies to `dev`, `build`, and `start` commands for the CMS package.
@@ -176,6 +177,7 @@ Set these runtime env vars:
 
 ```bash
 AWS_S3_BUCKET=my-space
+# Hostname only (no https://, no bucket prefix):
 AWS_S3_ENDPOINT=nyc3.digitaloceanspaces.com
 
 # Shared credentials
@@ -213,6 +215,7 @@ AWS_SECRET_ACCESS_KEY=...
 For DigitalOcean Spaces add endpoint:
 
 ```bash
+# Hostname only (no https://, no bucket prefix):
 AWS_S3_ENDPOINT=nyc3.digitaloceanspaces.com
 ```
 
