@@ -21,8 +21,14 @@ export default () => {
         const name = e.name ?? "Error";
         const message = e.message ?? "(no message)";
 
+        let safePath: string;
+        try {
+          safePath = new URL(ctx.url, "http://localhost").pathname;
+        } catch {
+          safePath = ctx.url.split(/[?#]/)[0];
+        }
         strapi.log.error(
-          `[error-trace] ${ctx.method} ${ctx.url} status=${status} name=${name} message=${message}`
+          `[error-trace] ${ctx.method} ${safePath} status=${status} name=${name} message=${message}`
         );
 
         if (e.stack) {
@@ -30,7 +36,9 @@ export default () => {
         }
 
         if (e.details !== undefined) {
-          strapi.log.error(`[error-trace] details=${util.inspect(e.details, { depth: 8 })}`);
+          strapi.log.error(
+            `[error-trace] details=${util.inspect(e.details, { depth: 8, maxStringLength: 512, maxArrayLength: 20 })}`
+          );
         }
       }
 
