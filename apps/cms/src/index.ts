@@ -15,7 +15,7 @@ export default {
   register(/* { strapi }: { strapi: Core.Strapi } */) {},
   bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {
     console.log("[env-check] CMS environment variables:");
-    console.log(`  DATABASE_FILENAME   = ${process.env.DATABASE_FILENAME ?? "MISSING"}`);
+    console.log(`  DATABASE_FILENAME   = ${process.env.DATABASE_FILENAME ?? ".tmp/data.db (default)"}`);
     console.log(`  STRAPI_PORT         = ${process.env.STRAPI_PORT ?? "MISSING (defaulting to 1337)"}`);
     console.log(`  AWS_S3_BUCKET       = ${process.env.AWS_S3_BUCKET ?? "MISSING (using local uploads)"}`);
     console.log(`  AWS_S3_REGION       = ${process.env.AWS_S3_REGION ?? "default (us-east-1)"}`);

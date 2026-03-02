@@ -121,7 +121,7 @@ pnpm env:link
 ```
 
 Common variables (see `.env.example` for the full list):
-- `APP_SECRET`: required core app secret; Strapi secrets are derived from this by default
+- `APP_SECRET`: recommended core app secret; Strapi secrets are derived from this by default
 - `AWS_S3_BUCKET`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
@@ -133,6 +133,7 @@ Common variables (see `.env.example` for the full list):
 
 Strapi startup fails fast if required variables are missing or left with placeholder values.
 This applies to `dev`, `build`, and `start` commands for the CMS package.
+For Strapi secrets, provide either `APP_SECRET` or all explicit secret overrides.
 
 ## Docker
 
@@ -192,7 +193,8 @@ On container start:
 - Litestream restores the DB only if local DB is missing.
 - Strapi starts normally.
 - Litestream continuously replicates WAL changes back to object storage.
-- Startup fails fast if `APP_SECRET`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, or `AWS_SECRET_ACCESS_KEY` are missing.
+- Startup fails fast if `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, or `AWS_SECRET_ACCESS_KEY` are missing.
+- Startup also fails if neither `APP_SECRET` nor a complete explicit Strapi secret set is provided.
 
 Optional explicit secret overrides (not required when `APP_SECRET` is set):
 
