@@ -50,11 +50,7 @@ ARG PUBLIC_CMS_URL=http://localhost:1337
 ENV PUBLIC_CMS_URL=$PUBLIC_CMS_URL
 
 RUN PUBLIC_CMS_URL=$PUBLIC_CMS_URL pnpm --filter @grawlix/web build && \
-  APP_KEYS="build-key-1,build-key-2,build-key-3,build-key-4" \
-  API_TOKEN_SALT="build-api-token-salt" \
-  ADMIN_JWT_SECRET="build-admin-jwt-secret" \
-  TRANSFER_TOKEN_SALT="build-transfer-token-salt" \
-  JWT_SECRET="build-jwt-secret" \
+  APP_SECRET="build-app-secret" \
   DATABASE_FILENAME=".tmp/data.db" \
   pnpm --filter @grawlix/cms build
 

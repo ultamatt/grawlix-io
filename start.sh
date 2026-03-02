@@ -3,10 +3,65 @@ set -euo pipefail
 
 require_env() {
   local name="$1"
-  if [ -z "${!name:-}" ]; then
+  if ! is_valid_runtime_value "${!name:-}"; then
     echo "[start] Missing required environment variable: ${name}"
     exit 1
   fi
+}
+
+trim_value() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  echo "$value"
+}
+
+is_placeholder_value() {
+  local normalized="$1"
+  local prefixes=("replace-me" "change-me" "your-")
+  local prefix
+
+  for prefix in "${prefixes[@]}"; do
+    if [[ "$normalized" == "$prefix" || "$normalized" == "${prefix}-"* ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+is_valid_runtime_value() {
+  local raw="$1"
+  local trimmed
+  local normalized
+
+  trimmed="$(trim_value "$raw")"
+  if [ -z "$trimmed" ]; then
+    return 1
+  fi
+
+  normalized="${trimmed,,}"
+  if is_placeholder_value "$normalized"; then
+    return 1
+  fi
+
+  return 0
+}
+
+has_strapi_secret_source() {
+  if is_valid_runtime_value "${APP_SECRET:-}"; then
+    return 0
+  fi
+
+  if is_valid_runtime_value "${APP_KEYS:-}" && \
+     is_valid_runtime_value "${API_TOKEN_SALT:-}" && \
+     is_valid_runtime_value "${ADMIN_JWT_SECRET:-}" && \
+     is_valid_runtime_value "${TRANSFER_TOKEN_SALT:-}" && \
+     is_valid_runtime_value "${JWT_SECRET:-}"; then
+    return 0
+  fi
+
+  return 1
 }
 
 resolve_cms_db_path() {
@@ -51,6 +106,11 @@ LITESTREAM_DB_PATH="$(resolve_cms_db_path "$DATABASE_FILENAME")"
 require_env "AWS_S3_BUCKET"
 require_env "AWS_ACCESS_KEY_ID"
 require_env "AWS_SECRET_ACCESS_KEY"
+
+if ! has_strapi_secret_source; then
+  echo "[start] Missing Strapi secret source. Set APP_SECRET (recommended) or all explicit secrets: APP_KEYS, API_TOKEN_SALT, ADMIN_JWT_SECRET, TRANSFER_TOKEN_SALT, JWT_SECRET" >&2
+  exit 1
+fi
 
 echo "[start] WEB_PORT=${WEB_PORT}  STRAPI_PORT=${STRAPI_PORT}"
 echo "[start] DATABASE_FILENAME=${DATABASE_FILENAME}  LITESTREAM_DB_PATH=${LITESTREAM_DB_PATH}"

@@ -1,13 +1,12 @@
 import * as path from "path";
 import { accessSync, constants, mkdirSync } from "fs";
-import { requireEnv } from "./env";
 
 type Env = ((key: string, defaultValue?: string) => string) & {
   int: (key: string, defaultValue?: number) => number;
 };
 
 export default ({ env }: { env: Env }) => {
-  const configuredFilename = requireEnv(env, "DATABASE_FILENAME");
+  const configuredFilename = env("DATABASE_FILENAME", ".tmp/data.db");
   const filename = path.isAbsolute(configuredFilename)
     ? configuredFilename
     : path.join(process.cwd(), configuredFilename);
