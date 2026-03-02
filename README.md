@@ -176,11 +176,23 @@ restore from and continuously replicate to object storage via Litestream.
 Set these runtime env vars:
 
 ```bash
-LITESTREAM_REPLICA_URL=s3://my-space/strapi/data
+AWS_S3_BUCKET=my-space
 
 # Shared credentials
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
+```
+
+Replica target is derived automatically as:
+
+```bash
+s3://$AWS_S3_BUCKET/strapi/data
+```
+
+Optional override:
+
+```bash
+LITESTREAM_REPLICA_URL=s3://my-space/custom/path
 ```
 
 Optional for S3-compatible backends (including DO Spaces):

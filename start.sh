@@ -40,30 +40,35 @@ envsubst '${WEB_PORT} ${STRAPI_PORT}' \
 LITESTREAM_PID=""
 if [ -n "${LITESTREAM_REPLICA_URL:-}" ]; then
   LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_REPLICA_URL}"
-  if [ -n "${LITESTREAM_S3_ENDPOINT:-}" ] && [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" != *"endpoint="* ]]; then
-    if [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" == *"?"* ]]; then
-      LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${LITESTREAM_S3_ENDPOINT}"
-    else
-      LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${LITESTREAM_S3_ENDPOINT}"
-    fi
-    echo "[litestream] Using custom S3 endpoint: ${LITESTREAM_S3_ENDPOINT}"
-  fi
-
-  mkdir -p "$(dirname "$LITESTREAM_DB_PATH")"
-  echo "[litestream] Restoring database (if replica exists): ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
-  litestream restore -if-db-not-exists -if-replica-exists -o "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL"
-
-  # Ensure the DB file exists so replicate can start before first write.
-  if [ ! -f "$LITESTREAM_DB_PATH" ]; then
-    touch "$LITESTREAM_DB_PATH"
-  fi
-
-  litestream replicate "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL" &
-  LITESTREAM_PID=$!
-  echo "[litestream] Replication started (pid ${LITESTREAM_PID})"
+elif [ -n "${AWS_S3_BUCKET:-}" ]; then
+  LITESTREAM_EFFECTIVE_REPLICA_URL="s3://${AWS_S3_BUCKET}/strapi/data"
+  echo "[litestream] Derived replica URL from AWS_S3_BUCKET: ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
 else
-  echo "[litestream] LITESTREAM_REPLICA_URL not set; skipping Litestream restore and replication setup."
+  echo "[litestream] Missing replication target. Set AWS_S3_BUCKET or LITESTREAM_REPLICA_URL."
+  exit 1
 fi
+
+if [ -n "${LITESTREAM_S3_ENDPOINT:-}" ] && [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" != *"endpoint="* ]]; then
+  if [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" == *"?"* ]]; then
+    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${LITESTREAM_S3_ENDPOINT}"
+  else
+    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${LITESTREAM_S3_ENDPOINT}"
+  fi
+  echo "[litestream] Using custom S3 endpoint: ${LITESTREAM_S3_ENDPOINT}"
+fi
+
+mkdir -p "$(dirname "$LITESTREAM_DB_PATH")"
+echo "[litestream] Restoring database (if replica exists): ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
+litestream restore -if-db-not-exists -if-replica-exists -o "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL"
+
+# Ensure the DB file exists so replicate can start before first write.
+if [ ! -f "$LITESTREAM_DB_PATH" ]; then
+  touch "$LITESTREAM_DB_PATH"
+fi
+
+litestream replicate "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL" &
+LITESTREAM_PID=$!
+echo "[litestream] Replication started (pid ${LITESTREAM_PID})"
 
 # Start app & reverse proxy in the background.
 pnpm start &
@@ -73,9 +78,7 @@ nginx -g 'daemon off;' &
 NGINX_PID=$!
 
 PIDS=("$APP_PID" "$NGINX_PID")
-if [ -n "$LITESTREAM_PID" ]; then
-  PIDS+=("$LITESTREAM_PID")
-fi
+PIDS+=("$LITESTREAM_PID")
 
 shutdown_children() {
   kill "${PIDS[@]}" 2>/dev/null || true
