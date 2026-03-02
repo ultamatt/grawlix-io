@@ -123,12 +123,18 @@ pnpm env:link
 Common variables (see `.env.example` for the full list):
 - `PUBLIC_CMS_URL`: Strapi base URL used by the frontend contact form  
   (embedded in the Astro static build at compile time)
+- `ALLOWED_HOSTS`: comma-separated hostnames allowed by `astro preview` in production
 - `APP_KEYS`
 - `API_TOKEN_SALT`
 - `ADMIN_JWT_SECRET`
 - `TRANSFER_TOKEN_SALT`
 - `JWT_SECRET`
 - `DATABASE_FILENAME`
+- `AWS_S3_BUCKET`
+- `AWS_S3_ENDPOINT`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `LITESTREAM_REPLICA_URL`
 
 Strapi startup fails fast if required variables are missing or left with placeholder values.
 This applies to `dev`, `build`, and `start` commands for the CMS package.
@@ -161,6 +167,65 @@ app spec or dashboard.
 Exposed ports:
 - `80` → frontend (Astro, internal port 3000)
 - `1337` → Strapi API / Admin
+
+### SQLite durability with Litestream
+
+For production SQLite durability without running Postgres, the container can
+restore from and continuously replicate to object storage via Litestream.
+
+Set these runtime env vars:
+
+```bash
+LITESTREAM_REPLICA_URL=s3://my-space/strapi/data
+
+# Shared credentials
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+```
+
+Optional for S3-compatible backends (including DO Spaces):
+
+```bash
+# Shared endpoint used by uploads and Litestream:
+AWS_S3_ENDPOINT=nyc3.digitaloceanspaces.com
+# Optional Litestream override:
+# LITESTREAM_S3_ENDPOINT=nyc3.digitaloceanspaces.com
+```
+
+On container start:
+- Litestream restores the DB only if local DB is missing.
+- Strapi starts normally.
+- Litestream continuously replicates WAL changes back to object storage.
+
+Operational note: run a single writable app instance when using SQLite.
+
+### Strapi media uploads to S3/Spaces
+
+You can keep the SQLite database local (replicated by Litestream) and store
+uploaded media in S3-compatible object storage.
+
+Set these runtime env vars:
+
+```bash
+AWS_S3_BUCKET=my-space
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+```
+
+For DigitalOcean Spaces add endpoint:
+
+```bash
+AWS_S3_ENDPOINT=nyc3.digitaloceanspaces.com
+```
+
+Optional:
+
+```bash
+# Optional for AWS S3 (or explicit provider region control):
+# AWS_S3_REGION=us-east-1
+# Public URL or CDN origin to serve media URLs from:
+AWS_S3_BASE_URL=https://my-space.nyc3.cdn.digitaloceanspaces.com
+```
 
 ## DevContainer
 
