@@ -38,33 +38,32 @@ envsubst '${WEB_PORT} ${STRAPI_PORT}' \
   > /etc/nginx/conf.d/default.conf
 
 LITESTREAM_PID=""
-if [ -z "${LITESTREAM_REPLICA_URL:-}" ]; then
-  echo "[litestream] LITESTREAM_REPLICA_URL is required"
-  exit 1
-fi
-
-LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_REPLICA_URL}"
-if [ -n "${LITESTREAM_S3_ENDPOINT}" ] && [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" != *"endpoint="* ]]; then
-  if [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" == *"?"* ]]; then
-    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${LITESTREAM_S3_ENDPOINT}"
-  else
-    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${LITESTREAM_S3_ENDPOINT}"
+if [ -n "${LITESTREAM_REPLICA_URL:-}" ]; then
+  LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_REPLICA_URL}"
+  if [ -n "${LITESTREAM_S3_ENDPOINT:-}" ] && [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" != *"endpoint="* ]]; then
+    if [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" == *"?"* ]]; then
+      LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${LITESTREAM_S3_ENDPOINT}"
+    else
+      LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${LITESTREAM_S3_ENDPOINT}"
+    fi
+    echo "[litestream] Using custom S3 endpoint: ${LITESTREAM_S3_ENDPOINT}"
   fi
-  echo "[litestream] Using custom S3 endpoint: ${LITESTREAM_S3_ENDPOINT}"
+
+  mkdir -p "$(dirname "$LITESTREAM_DB_PATH")"
+  echo "[litestream] Restoring database (if replica exists): ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
+  litestream restore -if-db-not-exists -if-replica-exists -o "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL"
+
+  # Ensure the DB file exists so replicate can start before first write.
+  if [ ! -f "$LITESTREAM_DB_PATH" ]; then
+    touch "$LITESTREAM_DB_PATH"
+  fi
+
+  litestream replicate "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL" &
+  LITESTREAM_PID=$!
+  echo "[litestream] Replication started (pid ${LITESTREAM_PID})"
+else
+  echo "[litestream] LITESTREAM_REPLICA_URL not set; skipping Litestream restore and replication setup."
 fi
-
-mkdir -p "$(dirname "$LITESTREAM_DB_PATH")"
-echo "[litestream] Restoring database (if replica exists): ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
-litestream restore -if-db-not-exists -if-replica-exists -o "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL"
-
-# Ensure the DB file exists so replicate can start before first write.
-if [ ! -f "$LITESTREAM_DB_PATH" ]; then
-  touch "$LITESTREAM_DB_PATH"
-fi
-
-litestream replicate "$LITESTREAM_DB_PATH" "$LITESTREAM_EFFECTIVE_REPLICA_URL" &
-LITESTREAM_PID=$!
-echo "[litestream] Replication started (pid ${LITESTREAM_PID})"
 
 # Start app & reverse proxy in the background.
 pnpm start &
@@ -74,7 +73,9 @@ nginx -g 'daemon off;' &
 NGINX_PID=$!
 
 PIDS=("$APP_PID" "$NGINX_PID")
-PIDS+=("$LITESTREAM_PID")
+if [ -n "$LITESTREAM_PID" ]; then
+  PIDS+=("$LITESTREAM_PID")
+fi
 
 shutdown_children() {
   kill "${PIDS[@]}" 2>/dev/null || true
@@ -86,9 +87,13 @@ trap 'shutdown_children; exit 0' TERM INT
 
 # wait -n: returns when the FIRST background job exits (bash 4.3+).
 # wait -p: captures which PID exited (bash 5.1+; bookworm ships 5.2).
+# Temporarily disable errexit so a non-zero exit from a child does not
+# prevent us from running the shutdown and diagnostics logic below.
 EXITED_PID=""
+set +e
 wait -n -p EXITED_PID "${PIDS[@]}" 2>/dev/null
 EXIT_CODE=$?
+set -e
 
 if [ "$EXITED_PID" = "$APP_PID" ]; then
   echo "[start] App exited (code ${EXIT_CODE}) — stopping remaining services"

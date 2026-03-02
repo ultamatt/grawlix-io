@@ -7,11 +7,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends nginx gettext-b
 
 RUN set -eux; \
     case "${TARGETARCH}" in \
-      ""|amd64) LITESTREAM_ARCH="x86_64" ;; \
-      arm64) LITESTREAM_ARCH="arm64" ;; \
+      ""|amd64) LITESTREAM_ARCH="x86_64"; LITESTREAM_SHA256="2a9caa9373c0b577ebddbadfad8e27ac906378760f5afcfba2f0a37983429e18" ;; \
+      arm64)    LITESTREAM_ARCH="arm64";  LITESTREAM_SHA256="ca5c2c83975ab7500c2e0057a01ef4d42b822d00ab8ebfe9fb59c0a4d9a33c65" ;; \
       *) echo "Unsupported TARGETARCH: ${TARGETARCH}"; exit 1 ;; \
     esac; \
     curl -fsSL -o /tmp/litestream.deb "https://github.com/benbjohnson/litestream/releases/download/v${LITESTREAM_VERSION}/litestream-${LITESTREAM_VERSION}-linux-${LITESTREAM_ARCH}.deb"; \
+    echo "${LITESTREAM_SHA256}  /tmp/litestream.deb" | sha256sum -c -; \
     dpkg -i /tmp/litestream.deb; \
     rm -f /tmp/litestream.deb
 
