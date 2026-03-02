@@ -26,9 +26,9 @@ normalize_s3_endpoint() {
   normalized="${normalized#https://}"
   normalized="${normalized%/}"
 
-  if [[ "$normalized" == */* ]]; then
+  if ! [[ "$normalized" =~ ^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*(:[0-9]{1,5})?$ ]]; then
     echo "[start] Invalid AWS_S3_ENDPOINT: ${raw_endpoint}" >&2
-    echo "[start] AWS_S3_ENDPOINT must be a hostname only (example: sfo3.digitaloceanspaces.com)" >&2
+    echo "[start] AWS_S3_ENDPOINT must be a hostname[:port] only (example: sfo3.digitaloceanspaces.com or sfo3.digitaloceanspaces.com:443)" >&2
     exit 1
   fi
 
