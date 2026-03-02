@@ -11,11 +11,7 @@ const envPath = path.join(repoRoot, ".env");
 const randomSecret = (size = 32) => randomBytes(size).toString("hex");
 
 const replacements = {
-  APP_KEYS: Array.from({ length: 4 }, () => randomSecret()).join(","),
-  API_TOKEN_SALT: randomSecret(),
-  ADMIN_JWT_SECRET: randomSecret(),
-  TRANSFER_TOKEN_SALT: randomSecret(),
-  JWT_SECRET: randomSecret(),
+  APP_SECRET: randomSecret(),
 };
 
 const source = await readFile(examplePath, "utf8");

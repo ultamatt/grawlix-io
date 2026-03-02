@@ -121,20 +121,15 @@ pnpm env:link
 ```
 
 Common variables (see `.env.example` for the full list):
-- `PUBLIC_CMS_URL`: Strapi base URL used by the frontend contact form  
-  (embedded in the Astro static build at compile time)
-- `ALLOWED_HOSTS`: comma-separated hostnames allowed by `astro preview` in production
-- `APP_KEYS`
-- `API_TOKEN_SALT`
-- `ADMIN_JWT_SECRET`
-- `TRANSFER_TOKEN_SALT`
-- `JWT_SECRET`
-- `DATABASE_FILENAME`
+- `APP_SECRET`: required core app secret; Strapi secrets are derived from this by default
 - `AWS_S3_BUCKET`
-- `AWS_S3_ENDPOINT`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
-- `STRAPI_VERBOSE_ERRORS` (set `true` temporarily to print full API error stack traces)
+- `AWS_S3_ENDPOINT`
+- `PUBLIC_CMS_URL` (optional): Strapi base URL used by the frontend contact form  
+  (embedded in the Astro static build at compile time)
+- `STRAPI_VERBOSE_ERRORS` (optional): set `true` temporarily to print full API error stack traces
+- `ALLOWED_HOSTS` (optional): comma-separated hostnames allowed by `astro preview` in production
 
 Strapi startup fails fast if required variables are missing or left with placeholder values.
 This applies to `dev`, `build`, and `start` commands for the CMS package.
@@ -176,6 +171,8 @@ restore from and continuously replicate to object storage via Litestream.
 Set these runtime env vars:
 
 ```bash
+APP_SECRET=...
+
 AWS_S3_BUCKET=my-space
 # Hostname only (no https://, no bucket prefix):
 AWS_S3_ENDPOINT=nyc3.digitaloceanspaces.com
@@ -195,7 +192,17 @@ On container start:
 - Litestream restores the DB only if local DB is missing.
 - Strapi starts normally.
 - Litestream continuously replicates WAL changes back to object storage.
-- Startup fails fast if `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, or `AWS_SECRET_ACCESS_KEY` are missing.
+- Startup fails fast if `APP_SECRET`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, or `AWS_SECRET_ACCESS_KEY` are missing.
+
+Optional explicit secret overrides (not required when `APP_SECRET` is set):
+
+```bash
+# APP_KEYS=...
+# API_TOKEN_SALT=...
+# ADMIN_JWT_SECRET=...
+# TRANSFER_TOKEN_SALT=...
+# JWT_SECRET=...
+```
 
 Operational note: run a single writable app instance when using SQLite.
 

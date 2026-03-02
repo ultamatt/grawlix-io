@@ -9,6 +9,22 @@ require_env() {
   fi
 }
 
+has_strapi_secret_source() {
+  if [ -n "${APP_SECRET:-}" ]; then
+    return 0
+  fi
+
+  if [ -n "${APP_KEYS:-}" ] && \
+     [ -n "${API_TOKEN_SALT:-}" ] && \
+     [ -n "${ADMIN_JWT_SECRET:-}" ] && \
+     [ -n "${TRANSFER_TOKEN_SALT:-}" ] && \
+     [ -n "${JWT_SECRET:-}" ]; then
+    return 0
+  fi
+
+  return 1
+}
+
 resolve_cms_db_path() {
   local configured_path="$1"
   if [[ "$configured_path" = /* ]]; then
@@ -51,6 +67,11 @@ LITESTREAM_DB_PATH="$(resolve_cms_db_path "$DATABASE_FILENAME")"
 require_env "AWS_S3_BUCKET"
 require_env "AWS_ACCESS_KEY_ID"
 require_env "AWS_SECRET_ACCESS_KEY"
+
+if ! has_strapi_secret_source; then
+  echo "[start] Missing Strapi secret source. Set APP_SECRET (recommended) or all explicit secrets: APP_KEYS, API_TOKEN_SALT, ADMIN_JWT_SECRET, TRANSFER_TOKEN_SALT, JWT_SECRET" >&2
+  exit 1
+fi
 
 echo "[start] WEB_PORT=${WEB_PORT}  STRAPI_PORT=${STRAPI_PORT}"
 echo "[start] DATABASE_FILENAME=${DATABASE_FILENAME}  LITESTREAM_DB_PATH=${LITESTREAM_DB_PATH}"

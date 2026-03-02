@@ -15,6 +15,7 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": [
+        "APP_SECRET",
         "APP_KEYS",
         "API_TOKEN_SALT",
         "ADMIN_JWT_SECRET",
