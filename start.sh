@@ -1,6 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
+require_env() {
+  local name="$1"
+  if [ -z "${!name:-}" ]; then
+    echo "[start] Missing required environment variable: ${name}"
+    exit 1
+  fi
+}
+
 resolve_cms_db_path() {
   local configured_path="$1"
   if [[ "$configured_path" = /* ]]; then
@@ -16,18 +24,11 @@ export WEB_PORT="${WEB_PORT:-${PORT:-8080}}"
 export STRAPI_PORT="${STRAPI_PORT:-1337}"
 export DATABASE_FILENAME="${DATABASE_FILENAME:-.tmp/data.db}"
 export ALLOWED_HOSTS="${ALLOWED_HOSTS:-grawlix.io,www.grawlix.io,localhost,127.0.0.1}"
-
-# Reuse AWS_S3_ENDPOINT by default so uploads & Litestream can share one setting.
-export LITESTREAM_S3_ENDPOINT="${LITESTREAM_S3_ENDPOINT:-${AWS_S3_ENDPOINT:-}}"
 LITESTREAM_DB_PATH="$(resolve_cms_db_path "$DATABASE_FILENAME")"
 
-# Support either LITESTREAM_* or AWS_* credentials.
-if [ -n "${LITESTREAM_ACCESS_KEY_ID:-}" ] && [ -z "${AWS_ACCESS_KEY_ID:-}" ]; then
-  export AWS_ACCESS_KEY_ID="${LITESTREAM_ACCESS_KEY_ID}"
-fi
-if [ -n "${LITESTREAM_SECRET_ACCESS_KEY:-}" ] && [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
-  export AWS_SECRET_ACCESS_KEY="${LITESTREAM_SECRET_ACCESS_KEY}"
-fi
+require_env "AWS_S3_BUCKET"
+require_env "AWS_ACCESS_KEY_ID"
+require_env "AWS_SECRET_ACCESS_KEY"
 
 echo "[start] WEB_PORT=${WEB_PORT}  STRAPI_PORT=${STRAPI_PORT}"
 echo "[start] DATABASE_FILENAME=${DATABASE_FILENAME}  LITESTREAM_DB_PATH=${LITESTREAM_DB_PATH}"
@@ -38,23 +39,16 @@ envsubst '${WEB_PORT} ${STRAPI_PORT}' \
   > /etc/nginx/conf.d/default.conf
 
 LITESTREAM_PID=""
-if [ -n "${LITESTREAM_REPLICA_URL:-}" ]; then
-  LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_REPLICA_URL}"
-elif [ -n "${AWS_S3_BUCKET:-}" ]; then
-  LITESTREAM_EFFECTIVE_REPLICA_URL="s3://${AWS_S3_BUCKET}/strapi/data"
-  echo "[litestream] Derived replica URL from AWS_S3_BUCKET: ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
-else
-  echo "[litestream] Missing replication target. Set AWS_S3_BUCKET or LITESTREAM_REPLICA_URL."
-  exit 1
-fi
+LITESTREAM_EFFECTIVE_REPLICA_URL="s3://${AWS_S3_BUCKET}/strapi/data"
+echo "[litestream] Derived replica URL from AWS_S3_BUCKET: ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
 
-if [ -n "${LITESTREAM_S3_ENDPOINT:-}" ] && [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" != *"endpoint="* ]]; then
+if [ -n "${AWS_S3_ENDPOINT:-}" ] && [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" != *"endpoint="* ]]; then
   if [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" == *"?"* ]]; then
-    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${LITESTREAM_S3_ENDPOINT}"
+    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${AWS_S3_ENDPOINT}"
   else
-    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${LITESTREAM_S3_ENDPOINT}"
+    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${AWS_S3_ENDPOINT}"
   fi
-  echo "[litestream] Using custom S3 endpoint: ${LITESTREAM_S3_ENDPOINT}"
+  echo "[litestream] Using custom S3 endpoint: ${AWS_S3_ENDPOINT}"
 fi
 
 mkdir -p "$(dirname "$LITESTREAM_DB_PATH")"

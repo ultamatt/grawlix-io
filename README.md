@@ -134,7 +134,6 @@ Common variables (see `.env.example` for the full list):
 - `AWS_S3_ENDPOINT`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
-- `LITESTREAM_REPLICA_URL`
 
 Strapi startup fails fast if required variables are missing or left with placeholder values.
 This applies to `dev`, `build`, and `start` commands for the CMS package.
@@ -177,6 +176,7 @@ Set these runtime env vars:
 
 ```bash
 AWS_S3_BUCKET=my-space
+AWS_S3_ENDPOINT=nyc3.digitaloceanspaces.com
 
 # Shared credentials
 AWS_ACCESS_KEY_ID=...
@@ -189,25 +189,11 @@ Replica target is derived automatically as:
 s3://$AWS_S3_BUCKET/strapi/data
 ```
 
-Optional override:
-
-```bash
-LITESTREAM_REPLICA_URL=s3://my-space/custom/path
-```
-
-Optional for S3-compatible backends (including DO Spaces):
-
-```bash
-# Shared endpoint used by uploads and Litestream:
-AWS_S3_ENDPOINT=nyc3.digitaloceanspaces.com
-# Optional Litestream override:
-# LITESTREAM_S3_ENDPOINT=nyc3.digitaloceanspaces.com
-```
-
 On container start:
 - Litestream restores the DB only if local DB is missing.
 - Strapi starts normally.
 - Litestream continuously replicates WAL changes back to object storage.
+- Startup fails fast if `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, or `AWS_SECRET_ACCESS_KEY` are missing.
 
 Operational note: run a single writable app instance when using SQLite.
 

@@ -21,7 +21,6 @@ services:
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
       WEBHOOKS_POPULATE_RELATIONS: ${WEBHOOKS_POPULATE_RELATIONS:-false}
       STRAPI_TELEMETRY_DISABLED: ${STRAPI_TELEMETRY_DISABLED:-true}
-      LITESTREAM_REPLICA_URL: ${LITESTREAM_REPLICA_URL:-}
     volumes:
       - cms_data:/app/apps/cms/.tmp
       - cms_uploads:/app/apps/cms/public/uploads
