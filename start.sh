@@ -18,6 +18,28 @@ resolve_cms_db_path() {
   fi
 }
 
+normalize_s3_endpoint() {
+  local raw_endpoint="$1"
+  local normalized="$raw_endpoint"
+
+  normalized="${normalized#http://}"
+  normalized="${normalized#https://}"
+  normalized="${normalized%/}"
+
+  if [[ "$normalized" == */* ]]; then
+    echo "[start] Invalid AWS_S3_ENDPOINT: ${raw_endpoint}" >&2
+    echo "[start] AWS_S3_ENDPOINT must be a hostname only (example: sfo3.digitaloceanspaces.com)" >&2
+    exit 1
+  fi
+
+  if [[ "$normalized" == "${AWS_S3_BUCKET}."* ]]; then
+    normalized="${normalized#${AWS_S3_BUCKET}.}"
+    echo "[start] AWS_S3_ENDPOINT included bucket prefix; normalized to: ${normalized}" >&2
+  fi
+
+  echo "$normalized"
+}
+
 # WEB_PORT is the public nginx port. DO App Platform injects it as PORT;
 # we honour that as a fallback so either name works.
 export WEB_PORT="${WEB_PORT:-${PORT:-8080}}"
@@ -43,12 +65,13 @@ LITESTREAM_EFFECTIVE_REPLICA_URL="s3://${AWS_S3_BUCKET}/strapi/data"
 echo "[litestream] Derived replica URL from AWS_S3_BUCKET: ${LITESTREAM_EFFECTIVE_REPLICA_URL}"
 
 if [ -n "${AWS_S3_ENDPOINT:-}" ] && [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" != *"endpoint="* ]]; then
+  NORMALIZED_S3_ENDPOINT="$(normalize_s3_endpoint "${AWS_S3_ENDPOINT}")"
   if [[ "${LITESTREAM_EFFECTIVE_REPLICA_URL}" == *"?"* ]]; then
-    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${AWS_S3_ENDPOINT}"
+    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}&endpoint=${NORMALIZED_S3_ENDPOINT}"
   else
-    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${AWS_S3_ENDPOINT}"
+    LITESTREAM_EFFECTIVE_REPLICA_URL="${LITESTREAM_EFFECTIVE_REPLICA_URL}?endpoint=${NORMALIZED_S3_ENDPOINT}"
   fi
-  echo "[litestream] Using custom S3 endpoint: ${AWS_S3_ENDPOINT}"
+  echo "[litestream] Using custom S3 endpoint: ${NORMALIZED_S3_ENDPOINT}"
 fi
 
 mkdir -p "$(dirname "$LITESTREAM_DB_PATH")"
