@@ -1,4 +1,5 @@
 import { requireEnv, requireSecret } from "./env";
+import { toS3EndpointUrl } from "./s3";
 
 type Env = ((key: string, defaultValue?: string) => string) & {
   bool: (key: string, defaultValue?: boolean) => boolean;
@@ -35,7 +36,7 @@ export default ({ env }: { env: Env }) => {
 
     const endpoint = env("AWS_S3_ENDPOINT");
     if (endpoint) {
-      s3Options.endpoint = endpoint;
+      s3Options.endpoint = toS3EndpointUrl(endpoint, s3Bucket);
     }
 
     const baseUrl = env("AWS_S3_BASE_URL");

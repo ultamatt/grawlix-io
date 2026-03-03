@@ -129,6 +129,7 @@ Common variables (see `.env.example` for the full list):
 - `PUBLIC_CMS_URL` (optional): Strapi base URL used by the frontend contact form  
   (embedded in the Astro static build at compile time)
 - `STRAPI_VERBOSE_ERRORS` (optional): set `true` temporarily to print full API error stack traces
+- `CSP_CONNECT_SRC_EXTRA` (optional): comma-separated extra origins/schemes for Strapi admin `connect-src`
 - `ALLOWED_HOSTS` (optional): comma-separated hostnames allowed by `astro preview` in production
 
 Strapi startup fails fast if required variables are missing or left with placeholder values.
@@ -235,6 +236,8 @@ Optional:
 # AWS_S3_REGION=us-east-1
 # Public URL or CDN origin to serve media URLs from:
 AWS_S3_BASE_URL=https://my-space.nyc3.cdn.digitaloceanspaces.com
+# Optional: extra Strapi admin connect-src entries (comma-separated)
+# CSP_CONNECT_SRC_EXTRA=https://admin.example.com,https://api.example.com
 ```
 
 ## DevContainer
