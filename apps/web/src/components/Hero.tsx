@@ -6,12 +6,12 @@ export function Hero() {
           We Build <span className="highlight">Digital Experiences</span>
         </h1>
         <p>
-          Grawlix is a full-service web and mobile application development company. We craft modern,
-          scalable digital solutions for businesses of all sizes.
+          Grawlix designs and ships product sites, custom platforms, and polished digital tools that
+          help businesses look credible and move faster.
         </p>
         <div className="hero-cta">
-          <a href="#services" className="btn btn-primary">
-            Our Services
+          <a href="#projects" className="btn btn-primary">
+            View Projects
           </a>
           <a href="#contact" className="btn btn-secondary">
             Get in Touch

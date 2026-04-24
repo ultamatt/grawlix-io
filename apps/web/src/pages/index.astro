@@ -3,6 +3,7 @@ import { Contact } from "../components/Contact";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import { Hero } from "../components/Hero";
+import Projects from "../components/Projects.astro";
 import { Services } from "../components/Services";
 import Layout from "../layouts/Layout.astro";
 ---
@@ -12,6 +13,7 @@ import Layout from "../layouts/Layout.astro";
   <main>
     <Hero client:load />
     <Services client:load />
+    <Projects />
     <Contact client:load />
   </main>
   <Footer />
