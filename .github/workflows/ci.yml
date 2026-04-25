@@ -64,6 +64,7 @@ jobs:
     permissions:
       contents: read
     env:
+      NODE_ENV: production
       APP_SECRET: ci-build-secret
       PUBLIC_CMS_URL: https://grawlix.io
     steps:
