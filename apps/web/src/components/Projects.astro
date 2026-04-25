@@ -1,34 +1,44 @@
 ---
 const projects = [
   {
-    title: 'CineSignal',
-    href: 'https://cinesignal.com',
-    image: '/projects/cinesignal-landing.png',
-    imageAlt: 'CineSignal marketing image showing the Just One Link creative platform hero.',
-    category: 'Creative platform',
+    title: "CineSignal",
+    href: "https://cinesignal.com",
+    image: "/projects/cinesignal-landing.png",
+    imageAlt: "CineSignal marketing image showing the Just One Link creative platform hero.",
+    category: "Creative platform",
     summary:
-      'A media-rich platform for actors, writers, and directors to publish reels, scripts, galleries, and unified professional profiles.',
-    highlights: ['Product strategy', 'Search and discovery', 'Media-heavy UX', 'Growth landing page'],
+      "A media-rich platform for actors, writers, and directors to publish reels, scripts, galleries, and unified professional profiles.",
+    highlights: [
+      "Product strategy",
+      "Search and discovery",
+      "Media-heavy UX",
+      "Growth landing page",
+    ],
   },
   {
-    title: 'Ditty',
-    href: 'https://getditty.com',
-    image: '/projects/ditty-home.png',
-    imageAlt: 'Ditty homepage featuring a desktop file transfer product and product screenshot.',
-    category: 'Desktop product marketing',
+    title: "Ditty",
+    href: "https://getditty.com",
+    image: "/projects/ditty-home.png",
+    imageAlt: "Ditty homepage featuring a desktop file transfer product and product screenshot.",
+    category: "Desktop product marketing",
     summary:
-      'A sharp product site for a cross-platform file transfer tool focused on secure, high-speed cloud handoff for production workflows.',
-    highlights: ['Product positioning', 'Desktop software UX', 'Technical storytelling', 'Conversion-focused marketing'],
+      "A sharp product site for a cross-platform file transfer tool focused on secure, high-speed cloud handoff for production workflows.",
+    highlights: [
+      "Product positioning",
+      "Desktop software UX",
+      "Technical storytelling",
+      "Conversion-focused marketing",
+    ],
   },
   {
-    title: 'Big Mac',
-    href: 'https://mattmoeller.com/blog/big-mac/',
-    image: '/projects/big-mac-detail.png',
-    imageAlt: 'Big Mac utility screenshot showing a desktop app that reads a device MAC address.',
-    category: 'Desktop utility',
+    title: "Big Mac",
+    href: "https://mattmoeller.com/blog/big-mac/",
+    image: "/projects/big-mac-detail.png",
+    imageAlt: "Big Mac utility screenshot showing a desktop app that reads a device MAC address.",
+    category: "Desktop utility",
     summary:
-      'A small desktop tool built with Rust, Electron, and Neon to solve MAC address lookup issues in Node environments, documented and published through MattMoeller.com.',
-    highlights: ['Rust', 'Electron', 'Neon bindings', 'Tooling and debugging'],
+      "A small desktop tool built with Rust, Electron, and Neon to solve MAC address lookup issues in Node environments, documented and published through MattMoeller.com.",
+    highlights: ["Rust", "Electron", "Neon bindings", "Tooling and debugging"],
   },
 ];
 ---
@@ -47,7 +57,7 @@ const projects = [
       {
         projects.map((project) => (
           <article class="project-card">
-            <a href={project.href} class="project-image-link" target="_blank" rel="noreferrer">
+            <a href={project.href} class="project-image-link" target="_blank" rel="noopener noreferrer">
               <img src={project.image} alt={project.imageAlt} class="project-image" loading="lazy" />
             </a>
 
@@ -64,7 +74,13 @@ const projects = [
                 ))}
               </ul>
 
-              <a href={project.href} class="btn btn-secondary project-link" target="_blank" rel="noreferrer">
+              <a
+                href={project.href}
+                class="btn btn-secondary project-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Visit ${project.title} project`}
+              >
                 Visit project
               </a>
             </div>
